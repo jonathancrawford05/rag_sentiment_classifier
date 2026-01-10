@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "rag-sentiment-classifier"
+version = "0.1.0"
+description = "Minimal RAG sentiment classification prototype using LangChain and Ollama."
+authors = ["DataAnalytics Corp"]
+readme = "README.md"
+packages = [{ include = "rag_sentiment_classifier", from = "src" }]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.115.0"
+uvicorn = { version = "^0.30.6", extras = ["standard"] }
+pydantic = "^2.9.2"
+pydantic-settings = "^2.5.2"
+langchain-core = "^0.2.40"
+langchain-community = "^0.2.17"
+redis = "^5.0.8"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.2"
+
+[tool.pytest.ini_options]
+addopts = "-q"
+pythonpath = ["src"]
+
+[build-system]
+requires = ["poetry-core>=1.9.0"]
+build-backend = "poetry.core.masonry.api"
