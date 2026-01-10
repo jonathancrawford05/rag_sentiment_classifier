@@ -6,10 +6,10 @@ WORKDIR /app
 RUN pip install --no-cache-dir "poetry==${POETRY_VERSION}"
 
 COPY pyproject.toml README.md /app/
-RUN poetry config virtualenvs.create false \
-    && poetry install --no-root --only main
-
 COPY src /app/src
+
+RUN poetry config virtualenvs.create false \
+    && poetry install --only main
 
 EXPOSE 8000
 CMD ["uvicorn", "rag_sentiment_classifier.api:app", "--host", "0.0.0.0", "--port", "8000"]
