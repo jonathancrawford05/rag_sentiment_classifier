@@ -14,7 +14,7 @@ class Settings(BaseSettings):
 
     # Redis Cache Configuration
     redis_host: str = "localhost"
-    redis_port: int = 6379
+    redis_port: int = 6380
     redis_ttl: int = 3600
     redis_password: str = ""
     redis_ssl: bool = False

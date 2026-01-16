@@ -24,15 +24,15 @@ class TestSettingsDefaults:
         settings = Settings()
 
         # LLM defaults
-        assert settings.ollama_base_url == "http://localhost:11434"
+        assert settings.ollama_base_url == "http://ollama:11434"
         assert settings.ollama_model == "llama3.1"
         assert settings.ollama_temperature == 0.2
         assert settings.ollama_max_tokens == 512
         assert settings.llama_timeout == 60
 
         # Redis defaults
-        assert settings.redis_host == "localhost"
-        assert settings.redis_port == 6379
+        assert settings.redis_host == "redis"
+        assert settings.redis_port == 6380
         assert settings.redis_ttl == 3600
         assert settings.redis_password == ""
         assert settings.redis_ssl is False
@@ -166,7 +166,7 @@ class TestSettingsValidation:
             ollama_temperature=0.3,
             ollama_max_tokens=256,
             redis_host="test-redis",
-            redis_port=6379,
+            redis_port=6380,
             api_key="test-key",
             rate_limit_requests=5,
         )

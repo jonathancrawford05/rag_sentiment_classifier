@@ -130,7 +130,7 @@ def test_settings() -> Settings:
         ollama_max_tokens=512,
         llama_timeout=60,
         redis_host="localhost",
-        redis_port=6379,
+        redis_port=6380,
         redis_ttl=3600,
         redis_password="",
         redis_ssl=False,
