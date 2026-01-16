@@ -23,15 +23,15 @@ class TestSettingsDefaults:
         """Test that settings have sensible defaults."""
         settings = Settings()
 
-        # LLM defaults
-        assert settings.ollama_base_url == "http://ollama:11434"
+        # LLM defaults (for local development)
+        assert settings.ollama_base_url == "http://localhost:11434"
         assert settings.ollama_model == "llama3.1"
         assert settings.ollama_temperature == 0.2
         assert settings.ollama_max_tokens == 512
         assert settings.llama_timeout == 60
 
-        # Redis defaults
-        assert settings.redis_host == "redis"
+        # Redis defaults (for local development)
+        assert settings.redis_host == "localhost"
         assert settings.redis_port == 6380
         assert settings.redis_ttl == 3600
         assert settings.redis_password == ""
