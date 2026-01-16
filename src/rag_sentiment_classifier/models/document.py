@@ -16,7 +16,9 @@ class DocumentInput(BaseModel):
     """
 
     content: str = Field(..., min_length=1, max_length=50000, description="Document text content")
-    document_id: str = Field(..., pattern=r"^[A-Za-z0-9-_]{1,100}$", description="Unique document ID")
+    document_id: str = Field(
+        ..., pattern=r"^[A-Za-z0-9-_]{1,100}$", description="Unique document ID"
+    )
     source: str = Field(..., min_length=1, max_length=100, description="Document source system")
     metadata: dict[str, Any] | None = Field(None, description="Optional metadata")
 
@@ -30,10 +32,7 @@ class DocumentInput(BaseModel):
 
         # Remove null bytes and other potentially problematic control characters
         # Keep newlines, returns, and tabs as they're legitimate in documents
-        sanitized = "".join(
-            char for char in stripped
-            if ord(char) >= 32 or char in "\n\r\t"
-        )
+        sanitized = "".join(char for char in stripped if ord(char) >= 32 or char in "\n\r\t")
 
         if not sanitized:
             raise ValueError("Content contains only invalid characters")
@@ -60,7 +59,9 @@ class DocumentInput(BaseModel):
 
             # Validate value types and sizes
             if isinstance(val, str) and len(val) > 1000:
-                raise ValueError(f"Metadata value for key '{key}' exceeds maximum length of 1000 characters")
+                raise ValueError(
+                    f"Metadata value for key '{key}' exceeds maximum length of 1000 characters"
+                )
             elif isinstance(val, list | dict) and len(str(val)) > 1000:
                 raise ValueError(f"Metadata value for key '{key}' is too large")
 
@@ -85,11 +86,12 @@ class ClassificationResult(BaseModel):
     document_id: str
     category: Literal["Regulatory", "Compliance", "Risk", "Operational", "Other"]
     confidence: float = Field(..., ge=0.0, le=1.0, description="Classification confidence score")
-    subcategories: list[str] = Field(default_factory=list, description="Classification subcategories")
+    subcategories: list[str] = Field(
+        default_factory=list, description="Classification subcategories"
+    )
     risk_level: Literal["low", "medium", "high", "critical"]
     requires_review: bool
     reasoning: str
     processed_at: datetime = Field(
-        default_factory=lambda: datetime.now(UTC),
-        description="Processing timestamp"
+        default_factory=lambda: datetime.now(UTC), description="Processing timestamp"
     )

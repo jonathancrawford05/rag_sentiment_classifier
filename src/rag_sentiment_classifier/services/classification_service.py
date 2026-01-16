@@ -33,11 +33,7 @@ class DocumentClassificationService:
         )
         self._initialize_cache()
 
-        self.classification_chain = (
-            CLASSIFICATION_PROMPT
-            | self.llm
-            | parser
-        )
+        self.classification_chain = CLASSIFICATION_PROMPT | self.llm | parser
 
         logger.info("DocumentClassificationService initialized")
 
@@ -94,7 +90,7 @@ class DocumentClassificationService:
                 exc_info=True,
             )
             if retry_count < settings.max_retries:
-                wait_time = settings.retry_delay * (2 ** retry_count)
+                wait_time = settings.retry_delay * (2**retry_count)
                 logger.info(
                     "Retrying in %ss (attempt %s/%s)",
                     wait_time,
