@@ -1,6 +1,5 @@
 import logging
 import time
-from typing import Optional
 
 import redis
 from langchain_community.cache import RedisCache
@@ -29,27 +28,38 @@ class DocumentClassificationService:
             model=settings.ollama_model,
             base_url=settings.ollama_base_url,
             temperature=settings.ollama_temperature,
+            num_predict=settings.ollama_max_tokens,
+            timeout=settings.llama_timeout,
         )
         self._initialize_cache()
 
-        self.classification_chain = (
-            CLASSIFICATION_PROMPT
-            | self.llm
-            | parser
-        )
+        self.classification_chain = CLASSIFICATION_PROMPT | self.llm | parser
 
         logger.info("DocumentClassificationService initialized")
 
     def _initialize_cache(self) -> None:
+        """Initialize Redis cache with secure connection settings."""
         try:
-            redis_client = redis.Redis(
-                host=settings.redis_host,
-                port=settings.redis_port,
-                decode_responses=True,
-            )
+            # Build Redis connection parameters
+            redis_params = {
+                "host": settings.redis_host,
+                "port": settings.redis_port,
+                "decode_responses": True,
+            }
+
+            # Add password if configured
+            if settings.redis_password:
+                redis_params["password"] = settings.redis_password
+
+            # Add SSL if configured
+            if settings.redis_ssl:
+                redis_params["ssl"] = True
+                redis_params["ssl_cert_reqs"] = None  # For self-signed certs in dev
+
+            redis_client = redis.Redis(**redis_params)
             redis_client.ping()
-            set_llm_cache(RedisCache(redis_client=redis_client))
-            logger.info("Redis cache initialized successfully")
+            set_llm_cache(RedisCache(redis_client=redis_client, ttl=settings.redis_ttl))
+            logger.info("Redis cache initialized successfully with secure connection")
         except Exception as exc:
             logger.warning(
                 "Redis cache initialization failed: %s. Proceeding without cache.",
@@ -60,7 +70,7 @@ class DocumentClassificationService:
         self,
         document: DocumentInput,
         retry_count: int = 0,
-    ) -> Optional[ClassificationResult]:
+    ) -> ClassificationResult | None:
         """Classify a single document with retry logic."""
         try:
             logger.info("Classifying document %s", document.document_id)
@@ -80,7 +90,7 @@ class DocumentClassificationService:
                 exc_info=True,
             )
             if retry_count < settings.max_retries:
-                wait_time = settings.retry_delay * (2 ** retry_count)
+                wait_time = settings.retry_delay * (2**retry_count)
                 logger.info(
                     "Retrying in %ss (attempt %s/%s)",
                     wait_time,
