@@ -184,7 +184,7 @@ jobs:
 
       - name: Test Docker image
         run: |
-          docker run -d -p 8000:8000 --name test-app \
+          docker run -d -p 8000:8081 --name test-app \
             -e API_KEY="" \
             -e OLLAMA_BASE_URL=http://localhost:11434 \
             rag-sentiment-classifier:${{ github.sha }}
