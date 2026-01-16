@@ -157,13 +157,16 @@ jobs:
           curl -sSL https://install.python-poetry.org | python3 -
           echo "$HOME/.local/bin" >> $GITHUB_PATH
 
+      - name: Install dependencies
+        run: poetry install
+
       - name: Build package
         run: poetry build
 
       - name: Check package
         run: |
-          poetry run pip install dist/*.whl
-          python -c "import rag_sentiment_classifier; print('✅ Package imports successfully')"
+          poetry run pip install --force-reinstall dist/*.whl
+          poetry run python -c "import rag_sentiment_classifier; print('✅ Package imports successfully')"
 
   docker:
     name: Docker Build
