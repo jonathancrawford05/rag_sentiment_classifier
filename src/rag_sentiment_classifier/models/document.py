@@ -1,5 +1,5 @@
-from datetime import datetime, timezone
-from typing import Any, Literal, Optional
+from datetime import UTC, datetime
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -18,7 +18,7 @@ class DocumentInput(BaseModel):
     content: str = Field(..., min_length=1, max_length=50000, description="Document text content")
     document_id: str = Field(..., pattern=r"^[A-Za-z0-9-_]{1,100}$", description="Unique document ID")
     source: str = Field(..., min_length=1, max_length=100, description="Document source system")
-    metadata: Optional[dict[str, Any]] = Field(None, description="Optional metadata")
+    metadata: dict[str, Any] | None = Field(None, description="Optional metadata")
 
     @field_validator("content")
     @classmethod
@@ -42,7 +42,7 @@ class DocumentInput(BaseModel):
 
     @field_validator("metadata")
     @classmethod
-    def validate_metadata(cls, value: Optional[dict[str, Any]]) -> Optional[dict[str, Any]]:
+    def validate_metadata(cls, value: dict[str, Any] | None) -> dict[str, Any] | None:
         """Validate metadata structure and size."""
         if value is None:
             return value
@@ -61,7 +61,7 @@ class DocumentInput(BaseModel):
             # Validate value types and sizes
             if isinstance(val, str) and len(val) > 1000:
                 raise ValueError(f"Metadata value for key '{key}' exceeds maximum length of 1000 characters")
-            elif isinstance(val, (list, dict)) and len(str(val)) > 1000:
+            elif isinstance(val, list | dict) and len(str(val)) > 1000:
                 raise ValueError(f"Metadata value for key '{key}' is too large")
 
         return value
@@ -90,6 +90,6 @@ class ClassificationResult(BaseModel):
     requires_review: bool
     reasoning: str
     processed_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+        default_factory=lambda: datetime.now(UTC),
         description="Processing timestamp"
     )

@@ -7,7 +7,7 @@ Tests Pydantic models including:
 - Field constraints and patterns
 """
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 from pydantic import ValidationError
@@ -487,7 +487,7 @@ class TestClassificationResultValidation:
 
         # Should have timezone info
         assert result.processed_at.tzinfo is not None
-        assert result.processed_at.tzinfo == timezone.utc
+        assert result.processed_at.tzinfo == UTC
 
     def test_classification_result_serialization(self) -> None:
         """Test ClassificationResult can be serialized to dict."""

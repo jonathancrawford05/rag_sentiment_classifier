@@ -1,6 +1,5 @@
 import logging
 import time
-from typing import Optional
 
 import redis
 from langchain_community.cache import RedisCache
@@ -75,7 +74,7 @@ class DocumentClassificationService:
         self,
         document: DocumentInput,
         retry_count: int = 0,
-    ) -> Optional[ClassificationResult]:
+    ) -> ClassificationResult | None:
         """Classify a single document with retry logic."""
         try:
             logger.info("Classifying document %s", document.document_id)

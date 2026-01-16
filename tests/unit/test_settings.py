@@ -11,8 +11,6 @@ Tests settings configuration including:
 import os
 from unittest.mock import patch
 
-import pytest
-
 from rag_sentiment_classifier.config.settings import Settings, get_settings
 
 

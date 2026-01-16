@@ -1,10 +1,10 @@
 import logging
 
-from fastapi import FastAPI, HTTPException, Security, Depends, Request
+from fastapi import Depends, FastAPI, HTTPException, Request, Security
 from fastapi.security import APIKeyHeader
 from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
 
 from rag_sentiment_classifier.config.settings import get_settings
 from rag_sentiment_classifier.models.document import (

@@ -4,8 +4,9 @@ Pytest fixtures for RAG Sentiment Classifier tests.
 This module provides reusable test fixtures for unit and integration tests.
 """
 
-from datetime import datetime, timezone
-from typing import Any, Generator
+from collections.abc import Generator
+from datetime import UTC, datetime
+from typing import Any
 from unittest.mock import MagicMock, Mock
 
 import pytest
@@ -81,7 +82,7 @@ def sample_classification() -> ClassificationResult:
         risk_level="medium",
         requires_review=False,
         reasoning="Document contains SEC filing requirements and financial disclosures.",
-        processed_at=datetime.now(timezone.utc),
+        processed_at=datetime.now(UTC),
     )
 
 
@@ -96,7 +97,7 @@ def sample_classification_high_confidence() -> ClassificationResult:
         risk_level="high",
         requires_review=False,
         reasoning="Clear AML compliance requirements identified.",
-        processed_at=datetime.now(timezone.utc),
+        processed_at=datetime.now(UTC),
     )
 
 
@@ -111,7 +112,7 @@ def sample_classification_low_confidence() -> ClassificationResult:
         risk_level="low",
         requires_review=True,
         reasoning="Unable to confidently classify document.",
-        processed_at=datetime.now(timezone.utc),
+        processed_at=datetime.now(UTC),
     )
 
 
