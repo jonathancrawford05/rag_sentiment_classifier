@@ -1,8 +1,8 @@
 """FastAPI application with dependency injection and async support."""
 
 import logging
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from typing import AsyncIterator
 
 from fastapi import Depends, FastAPI, HTTPException, Request, Security
 from fastapi.security import APIKeyHeader
@@ -54,9 +54,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             logger.warning("Redis not accessible, proceeding without cache")
             cache_provider = None
     except Exception as exc:
-        logger.warning(
-            "Cache initialization failed: %s. Proceeding without cache.", exc
-        )
+        logger.warning("Cache initialization failed: %s. Proceeding without cache.", exc)
         cache_provider = None
 
     yield

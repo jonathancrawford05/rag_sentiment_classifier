@@ -1,7 +1,8 @@
 """Tests for DocumentClassificationService with dependency injection."""
 
-import pytest
 from unittest.mock import AsyncMock
+
+import pytest
 
 from rag_sentiment_classifier.models.document import (
     ClassificationResult,
@@ -121,9 +122,7 @@ class TestDocumentClassificationService:
     ):
         """Test classification with cache hit."""
         # Set up cache to return result
-        service_with_cache.cache_provider.get = AsyncMock(
-            return_value=sample_result.model_dump()
-        )
+        service_with_cache.cache_provider.get = AsyncMock(return_value=sample_result.model_dump())
 
         result = await service_with_cache.classify_document(sample_document)
 
@@ -137,9 +136,7 @@ class TestDocumentClassificationService:
         service_with_cache.cache_provider.get.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_classify_document_without_cache(
-        self, service_without_cache, sample_document
-    ):
+    async def test_classify_document_without_cache(self, service_without_cache, sample_document):
         """Test classification without cache provider."""
         result = await service_without_cache.classify_document(sample_document)
 
@@ -150,14 +147,10 @@ class TestDocumentClassificationService:
         service_without_cache.llm_provider.classify.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_classify_document_llm_failure(
-        self, service_with_cache, sample_document
-    ):
+    async def test_classify_document_llm_failure(self, service_with_cache, sample_document):
         """Test handling of LLM failures."""
         # Make LLM fail
-        service_with_cache.llm_provider.classify = AsyncMock(
-            side_effect=Exception("LLM error")
-        )
+        service_with_cache.llm_provider.classify = AsyncMock(side_effect=Exception("LLM error"))
 
         result = await service_with_cache.classify_document(sample_document)
 
@@ -206,9 +199,7 @@ class TestDocumentClassificationService:
         assert "doc-1" in key1
 
     @pytest.mark.asyncio
-    async def test_classify_batch_success(
-        self, service_with_cache, sample_result
-    ):
+    async def test_classify_batch_success(self, service_with_cache, sample_result):
         """Test successful batch classification."""
         documents = [
             DocumentInput(
@@ -226,9 +217,7 @@ class TestDocumentClassificationService:
         assert service_with_cache.llm_provider.classify.call_count == 5
 
     @pytest.mark.asyncio
-    async def test_classify_batch_partial_failure(
-        self, service_with_cache, sample_result
-    ):
+    async def test_classify_batch_partial_failure(self, service_with_cache, sample_result):
         """Test batch classification with some failures."""
         documents = [
             DocumentInput(
@@ -267,9 +256,7 @@ class TestDocumentClassificationService:
         service_with_cache.llm_provider.classify.assert_not_called()
 
     @pytest.mark.asyncio
-    async def test_classify_batch_concurrency_control(
-        self, service_with_cache, sample_result
-    ):
+    async def test_classify_batch_concurrency_control(self, service_with_cache, sample_result):
         """Test that batch classification respects concurrency limits."""
         # Create more documents than max_concurrent
         documents = [
@@ -292,14 +279,10 @@ class TestDocumentClassificationService:
         assert service_with_cache.llm_provider.classify.call_count == 10
 
     @pytest.mark.asyncio
-    async def test_cache_save_failure_handling(
-        self, service_with_cache, sample_document
-    ):
+    async def test_cache_save_failure_handling(self, service_with_cache, sample_document):
         """Test that cache save failures don't break classification."""
         # Make cache save fail
-        service_with_cache.cache_provider.set = AsyncMock(
-            side_effect=Exception("Cache error")
-        )
+        service_with_cache.cache_provider.set = AsyncMock(side_effect=Exception("Cache error"))
 
         result = await service_with_cache.classify_document(sample_document)
 
@@ -308,14 +291,10 @@ class TestDocumentClassificationService:
         assert result.document_id == "test-123"
 
     @pytest.mark.asyncio
-    async def test_cache_get_failure_handling(
-        self, service_with_cache, sample_document
-    ):
+    async def test_cache_get_failure_handling(self, service_with_cache, sample_document):
         """Test that cache get failures don't break classification."""
         # Make cache get fail
-        service_with_cache.cache_provider.get = AsyncMock(
-            side_effect=Exception("Cache error")
-        )
+        service_with_cache.cache_provider.get = AsyncMock(side_effect=Exception("Cache error"))
 
         result = await service_with_cache.classify_document(sample_document)
 

@@ -46,9 +46,7 @@ class OllamaLLMProvider:
             timeout=timeout,
         )
         self.classification_chain = CLASSIFICATION_PROMPT | self.llm | parser
-        logger.info(
-            "OllamaLLMProvider initialized with model=%s, base_url=%s", model, base_url
-        )
+        logger.info("OllamaLLMProvider initialized with model=%s, base_url=%s", model, base_url)
 
     async def classify(self, document_id: str, content: str) -> ClassificationResult:
         """

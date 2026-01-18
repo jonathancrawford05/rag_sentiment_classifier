@@ -1,9 +1,9 @@
 """Tests for provider implementations."""
 
-import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
-from rag_sentiment_classifier.models.document import ClassificationResult
+import pytest
+
 from rag_sentiment_classifier.providers.ollama_provider import OllamaLLMProvider
 from rag_sentiment_classifier.providers.redis_provider import RedisCacheProvider
 
@@ -28,13 +28,17 @@ class TestOllamaLLMProvider:
         assert provider.llm is not None
         assert provider.classification_chain is not None
 
-    @pytest.mark.skip(reason="LangChain RunnableSequence doesn't allow mocking, tested via service tests")
+    @pytest.mark.skip(
+        reason="LangChain RunnableSequence doesn't allow mocking, tested via service tests"
+    )
     @pytest.mark.asyncio
     async def test_classify_success(self, provider):
         """Test successful classification."""
         pass
 
-    @pytest.mark.skip(reason="LangChain RunnableSequence doesn't allow mocking, tested via service tests")
+    @pytest.mark.skip(
+        reason="LangChain RunnableSequence doesn't allow mocking, tested via service tests"
+    )
     @pytest.mark.asyncio
     async def test_classify_failure(self, provider):
         """Test classification failure handling."""
@@ -64,7 +68,7 @@ class TestRedisCacheProvider:
     @pytest.mark.asyncio
     async def test_provider_initialization(self):
         """Test provider initializes with correct parameters."""
-        with patch("rag_sentiment_classifier.providers.redis_provider.redis.Redis") as mock_redis:
+        with patch("rag_sentiment_classifier.providers.redis_provider.redis.Redis"):
             provider = RedisCacheProvider(
                 host="localhost",
                 port=6380,

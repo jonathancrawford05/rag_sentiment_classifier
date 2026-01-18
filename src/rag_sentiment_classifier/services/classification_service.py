@@ -66,9 +66,7 @@ class DocumentClassificationService:
         content_hash = hashlib.sha256(content.encode()).hexdigest()[:16]
         return f"classify:{document_id}:{content_hash}"
 
-    async def _get_from_cache(
-        self, document_id: str, content: str
-    ) -> ClassificationResult | None:
+    async def _get_from_cache(self, document_id: str, content: str) -> ClassificationResult | None:
         """
         Try to get classification result from cache.
 
@@ -139,9 +137,7 @@ class DocumentClassificationService:
 
         # Classify with LLM
         try:
-            result = await self.llm_provider.classify(
-                document.document_id, document.content
-            )
+            result = await self.llm_provider.classify(document.document_id, document.content)
 
             # Save to cache
             await self._save_to_cache(document.document_id, document.content, result)
@@ -175,14 +171,10 @@ class DocumentClassificationService:
                 await asyncio.sleep(wait_time)
                 return await self.classify_document(document, retry_count + 1)
 
-            logger.error(
-                "All retries exhausted for document %s", document.document_id
-            )
+            logger.error("All retries exhausted for document %s", document.document_id)
             return None
 
-    async def classify_batch(
-        self, documents: list[DocumentInput]
-    ) -> list[ClassificationResult]:
+    async def classify_batch(self, documents: list[DocumentInput]) -> list[ClassificationResult]:
         """
         Classify multiple documents concurrently with controlled parallelism.
 
