@@ -28,6 +28,7 @@ class Settings(BaseSettings):
 
     # Application Configuration
     log_level: str = "INFO"
+    json_logs: bool = False  # Enable JSON logging for production
     max_retries: int = 2
     retry_delay: int = 1
     request_timeout: int = 120  # Overall request timeout in seconds

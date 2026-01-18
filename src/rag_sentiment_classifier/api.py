@@ -3,6 +3,8 @@
 import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from datetime import UTC, datetime
+from typing import Any
 
 from fastapi import Depends, FastAPI, HTTPException, Request, Security
 from fastapi.security import APIKeyHeader
@@ -10,6 +12,7 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 
+from rag_sentiment_classifier.config.logging_config import configure_logging
 from rag_sentiment_classifier.config.settings import get_settings
 from rag_sentiment_classifier.models.document import (
     ClassificationResult,
@@ -22,7 +25,7 @@ from rag_sentiment_classifier.services.classification_service import (
 )
 
 settings = get_settings()
-logging.basicConfig(level=settings.log_level)
+configure_logging(level=settings.log_level, json_logs=settings.json_logs)
 logger = logging.getLogger(__name__)
 
 # Global cache provider for lifecycle management
@@ -149,14 +152,63 @@ def get_classification_service() -> DocumentClassificationService:
 
 
 @app.get("/health")
-async def health_check() -> dict[str, str]:
+async def health_check() -> dict[str, Any]:
     """
-    Health check endpoint (no authentication required).
+    Basic health check endpoint (no authentication required).
 
     Returns:
-        Status dictionary indicating service health
+        Status dictionary indicating service is running
     """
-    return {"status": "ok"}
+    return {"status": "healthy"}
+
+
+@app.get("/health/detailed")
+async def detailed_health_check() -> dict[str, Any]:
+    """
+    Detailed health check endpoint with dependency status.
+
+    Checks:
+    - Application status
+    - Cache connectivity (Redis)
+
+    Returns:
+        Detailed health status including all dependencies
+
+    Status codes:
+    - 200: All systems healthy
+    - 503: One or more systems unhealthy (response still returned)
+    """
+    health_status = {
+        "status": "healthy",
+        "timestamp": datetime.now(UTC).isoformat(),
+        "version": app.version,
+        "checks": {},
+    }
+
+    # Check cache provider
+    if cache_provider:
+        try:
+            cache_healthy = await cache_provider.ping()
+            health_status["checks"]["cache"] = {
+                "status": "healthy" if cache_healthy else "unhealthy",
+                "type": "redis",
+            }
+            if not cache_healthy:
+                health_status["status"] = "degraded"
+        except Exception as exc:
+            health_status["checks"]["cache"] = {
+                "status": "unhealthy",
+                "type": "redis",
+                "error": str(exc),
+            }
+            health_status["status"] = "degraded"
+    else:
+        health_status["checks"]["cache"] = {
+            "status": "disabled",
+            "type": "none",
+        }
+
+    return health_status
 
 
 @app.post("/classify", response_model=ClassificationResult)
