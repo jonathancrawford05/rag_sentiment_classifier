@@ -3,6 +3,11 @@ FROM python:3.11-slim
 ENV POETRY_VERSION=1.8.3
 WORKDIR /app
 
+# Install curl for health checks
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN pip install --no-cache-dir "poetry==${POETRY_VERSION}"
 
 COPY pyproject.toml README.md /app/
