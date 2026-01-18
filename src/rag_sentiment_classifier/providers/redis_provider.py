@@ -23,9 +23,12 @@ class RedisCacheProvider:
         password: str | None = None,
         ssl: bool = False,
         ttl: int = 3600,
+        max_connections: int = 50,
+        socket_timeout: int = 5,
+        socket_connect_timeout: int = 5,
     ) -> None:
         """
-        Initialize Redis cache provider.
+        Initialize Redis cache provider with connection pooling.
 
         Args:
             host: Redis server hostname
@@ -33,11 +36,17 @@ class RedisCacheProvider:
             password: Redis password (optional)
             ssl: Enable SSL/TLS connection
             ttl: Default time-to-live in seconds
+            max_connections: Maximum connections in the pool
+            socket_timeout: Socket timeout in seconds
+            socket_connect_timeout: Connection timeout in seconds
         """
         redis_params = {
             "host": host,
             "port": port,
             "decode_responses": True,
+            "max_connections": max_connections,
+            "socket_timeout": socket_timeout,
+            "socket_connect_timeout": socket_connect_timeout,
         }
 
         if password:
@@ -49,7 +58,12 @@ class RedisCacheProvider:
 
         self.client = redis.Redis(**redis_params)
         self.default_ttl = ttl
-        logger.info("RedisCacheProvider initialized with host=%s, port=%d", host, port)
+        logger.info(
+            "RedisCacheProvider initialized with host=%s, port=%d, max_connections=%d",
+            host,
+            port,
+            max_connections,
+        )
 
     async def get(self, key: str) -> Any | None:
         """

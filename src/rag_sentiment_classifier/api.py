@@ -14,6 +14,7 @@ from slowapi.util import get_remote_address
 
 from rag_sentiment_classifier.config.logging_config import configure_logging
 from rag_sentiment_classifier.config.settings import get_settings
+from rag_sentiment_classifier.middleware.timeout import TimeoutMiddleware
 from rag_sentiment_classifier.models.document import (
     ClassificationResult,
     DocumentInput,
@@ -41,7 +42,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     """
     global cache_provider
 
-    # Startup: Initialize cache provider
+    # Startup: Initialize cache provider with connection pooling
     try:
         cache_provider = RedisCacheProvider(
             host=settings.redis_host,
@@ -49,10 +50,16 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             password=settings.redis_password,
             ssl=settings.redis_ssl,
             ttl=settings.redis_ttl,
+            max_connections=settings.redis_max_connections,
+            socket_timeout=settings.redis_socket_timeout,
+            socket_connect_timeout=settings.redis_socket_connect_timeout,
         )
         # Test connection
         if await cache_provider.ping():
-            logger.info("Redis cache initialized successfully")
+            logger.info(
+                "Redis cache initialized successfully with connection pool (size=%d)",
+                settings.redis_max_connections,
+            )
         else:
             logger.warning("Redis not accessible, proceeding without cache")
             cache_provider = None
@@ -70,6 +77,11 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
 # Initialize FastAPI app with lifespan
 app = FastAPI(title="RAG Sentiment Classifier", version="0.2.0", lifespan=lifespan)
+
+# Add timeout middleware if enabled
+if settings.enable_request_timeout:
+    app.add_middleware(TimeoutMiddleware, timeout=settings.request_timeout)
+    logger.info("Request timeout middleware enabled (timeout=%ds)", settings.request_timeout)
 
 # Initialize rate limiter
 limiter = Limiter(key_func=get_remote_address)
@@ -145,7 +157,7 @@ def get_classification_service() -> DocumentClassificationService:
         cache_provider=cache_provider,
         max_retries=settings.max_retries,
         retry_delay=settings.retry_delay,
-        max_concurrent=5,  # Can be made configurable
+        max_concurrent=settings.max_concurrent_classifications,
     )
 
     return service
@@ -270,8 +282,16 @@ async def classify_batch(
         List of classification results (failed classifications omitted)
 
     Raises:
-        HTTPException: 403 if invalid API key, 429 if rate limit exceeded
+        HTTPException: 403 if invalid API key, 429 if rate limit exceeded,
+                      400 if batch size exceeds maximum
     """
+    # Validate batch size
+    if len(documents) > settings.max_batch_size:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Batch size {len(documents)} exceeds maximum of {settings.max_batch_size}",
+        )
+
     logger.info("Classifying batch of %d documents", len(documents))
     results = await service.classify_batch(documents)
     logger.info(
